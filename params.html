@@ -1,0 +1,10 @@
+<div ng-controller="paramCtrl">
+	<h3>{{country.name}}</h3>	
+	<b>Capital : </b> {{country.capital}} <br>
+	<b>Population : </b> {{country.population | number}} <br>
+	<b>GDP : </b>{{country.gdp | currency}} <br>
+	<b>Flag : </b><br><img ng-src="{{country.flagURL}}" width="500">
+	
+
+
+</div>

@@ -2,9 +2,52 @@
 <html ng-app ="nameAPP">
 <head>
 	<title>Angular Study</title>
-	<script src = "https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.min.js"></script>
+	<script src = "//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.1/angular.min.js"></script>
+	<script src = "//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.10/angular-route.min.js"></script>
 	<script>
-		var nameAPP = angular.module('nameAPP', []);
+		var nameAPP = angular.module('nameAPP', ['ngRoute']);
+
+		nameAPP.config(function($routeProvider) {
+			$routeProvider.
+				when('/name',{
+					templateUrl : 'name.html',
+					controller : 'nameCtrl'
+
+				}).when('/flag',{
+					templateUrl : 'flag.html',
+					controller : 'flagCntrl'
+				}).when('/countries',{
+					templateUrl : 'countries.html',
+					controller : 'countryCtrl'
+				}).when('/params',{
+					template : '<ul><li><a href="#/params/China">China</a></li> <li><a href="#/params/India">India</a></li> <li><a href="#/params/United States of America">USA</a></li></ul>'
+					
+				}).when('/params/:value',{
+					templateUrl : 'params.html',
+					controller : 'paramCtrl'
+				}).otherwise({
+					template : '<h1>TEST {{countries[0].name}}</h1>',
+					controller : 'testCtrl'
+				}
+				)
+		})
+
+		nameAPP.factory('flags', function($http){
+        	return {
+          		list: function(callback){
+            		$http.get('JSON/flag.json').success(callback);
+          		},
+          		find : function(val,callback) {
+          			$http.get('JSON/flag.json').success(function(data){
+          				var country = data.filter(function(element){
+							return element.name === val;
+						})[0];
+					callback(country);
+          			})
+          		}
+        	};
+     	});
+
 		// =============Name Control======================
 		nameAPP.controller('nameCtrl',function ($scope) {
 			$scope.fname = "Arjun";
@@ -25,91 +68,48 @@
 		});
 		// ==================FLAG CONTROLLER=====================
 
-		nameAPP.controller('flagCntrl', ['$scope','$http', function(scope,http){
-			http.get('flag.json').success(function(data){
-				scope.countries = data;
-
+		nameAPP.controller('flagCntrl',function($scope,$http,flags){
+			flags.list(function(data){
+				$scope.countries = data;
 			})
-		}])
+		
+		})
 
 		// ============ALL Country Controller=================
 		nameAPP.controller('countryCtrl',["$scope","$http",function(scope,http){
-			http.get('countries.json').success(function(data){
+			http.get('JSON/countries.json').success(function(data){
 				scope.countries = data;
 				scope.sortField = 'population'
 				scope.reverse = true;
 			});
 		}]);
 
+		// ============Params Controller=================
+
+		nameAPP.controller('paramCtrl',function($scope,$routeParams,flags){
+			flags.find($routeParams.value , function(country){
+				$scope.country = country; 
+			} )
+		})
+
 
 	</script>
 </head>
 <body >
 
-	<!-- =============Name Control====================== -->
+	<nav>
+		<a href="#/name">Greetings</a> |
+		<a href="#/flag">Flags</a> |
+		<a href="#/countries">Search Countries</a> |
+		<a href="#/params">Params Example</a>
+	</nav>
 
-	<div ng-controller='nameCtrl'>
-		<h1>GREETINGS</h1>
-		Name:<input ng-model="fname" type="text"><br>
-		Name:<input ng-model="lname" type="text"><br>
+	<div ng-view>
 		
-		Hello <b> {{fname + " " + lname}} </b>!
 
-
-		<ul>
-			<li ng-repeat="value in list track by $index">{{value}} 
-				<a ng-click="removeList(value)"><span style="color:red">x</span></a>
-			</li>
-		</ul>
-
-		<form ng-submit="addToList()">
-			<input type="text" ng-model="newList">
-			<input type="submit" value="submit">	
-		</form>
 	</div>
 
-	<!-- ==================FLAG CONTROLLER===================== -->
 	
-	<div ng-controller="flagCntrl">
-		<H1>FLAGS</H1>
-		<table>
-			<tr>
-				<th align="left">Country</th>
-				<th>Population</th>
-				<th>Flag</th>
-				<th>Capital</th>
-				<th>GDP</th>
-			</tr>
-			<tr ng-repeat="country in countries | filter:query | orderBy:sortField:reverse ">
-				<td> {{country.name}} </td>
-				<td> {{country.population | number}} </td>
-				<td> <img ng-src="{{country.flagURL}}" width="100"> </td>
-				<td> {{country.capital}} </td>
-				<td> {{country.gdp | currency}} </td>
-			</tr>
-		</table>
-	</div>
-
-
-
-  	<!-- ============ALL Country Controller================= -->
-  	
-	<div ng-controller="countryCtrl">
-		<h1>SEARCH COUNTRIES</h1>
-		Search: <input type="text" ng-model="query">
-		<table>
-			<tr>
-				<th align="left"><a href="" ng-click="sortField='name'; reverse=!reverse;">Country</a></th>
-				<th><a href="" ng-click="sortField='population';reverse=!reverse;">Population</a></th>
-			</tr>
-			<tr ng-repeat="country in countries | filter:query | orderBy:sortField:reverse ">
-				<td> {{country.name}} </td>
-				<td> {{country.population}} </td>
-			</tr>
-		</table>
-		
-
-	</div>
 
 </body>
 </html>

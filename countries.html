@@ -1,0 +1,16 @@
+<div ng-controller="countryCtrl">
+		<h1>SEARCH COUNTRIES</h1>
+		Search: <input type="text" ng-model="query">
+		<table>
+			<tr>
+				<th align="left"><a href="" ng-click="sortField='name'; reverse=!reverse;">Country</a></th>
+				<th><a href="" ng-click="sortField='population';reverse=!reverse;">Population</a></th>
+			</tr>
+			<tr ng-repeat="country in countries | filter:query | orderBy:sortField:reverse ">
+				<td> {{country.name}} </td>
+				<td> {{country.population}} </td>
+			</tr>
+		</table>
+		
+
+	</div>
